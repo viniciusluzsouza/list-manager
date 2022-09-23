@@ -1,92 +1,101 @@
-# vibbra-list-manager
+# List Manager App
+
+Um projeto para gerenciamento de listas de ítens.
+
+## Escopo
+Desenvolver uma API Rest que forneça endpoints para gerenciamento de cadastro de usuários, listas e ítens. 
+
+**Tecnologias utilizadas :** Linguagem de programação GO e banco de dados relacional MySQL.
+
+## Atividades
+**Estruturação banco de dados:** definição das entidades do banco de dados e seus relacionamentos.
+
+**Warmup do projeto:** inicialização do projeto GO, com estrutura inicial e inicialização de container com MySQL com entidades criadas.
+
+**Desenvolvimento endpoint /users:** desenvolvimento das rotas para cadastro de usuário
+
+**Desenvolvimento endpoint /lists:** desenvolvimento das rotas para cadastro de listas
+
+**Desenvolvimento endpoint /items:** desenvolvimento das rotas para cadastro de ítens
+
+**Desenvolvimento endpoint /authenticate:** desenvolvimento da rota para autenticação com token JWT
+
+**Dockerização do projeto:** preparar o projeto para execução completa via docker - para testes em ambiente local
+
+**Documentação:** documentação sobre execução e utilização do projeto
+
+**Testes unitários:** desenvolvimento dos testes unitários da aplicação
 
 
+## Execução
 
-## Getting started
+Para executar o projeto, execute o seguinte comando na pasta raiz:
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+    $ [sudo] docker-compose up -d
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+Ou, caso possua o make instalado:
 
-## Add your files
+    $ make run
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+O comando acima executará um container para o MySQL e um para a aplicação. Para acessar os endpoints seguros, é necessário efetuar o login através do endpoint http://localhost:8080/api/v1/authenticate, com o seguinte payload JSON:
 
-```
-cd existing_repo
-git remote add origin https://git.vibbra.com.br/vinicius-1663626255/vibbra-list-manager.git
-git branch -M main
-git push -uf origin main
-```
+    {
+        "login": "admin",
+        "password": "admin"
+    }
 
-## Integrate with your tools
+Para fazer login via SSO, é necessário chamar o endpoint http://localhost:8080/api/v1/authenticate/sso com o seguinte payload:
 
-- [ ] [Set up project integrations](https://git.vibbra.com.br/vinicius-1663626255/vibbra-list-manager/-/settings/integrations)
 
-## Collaborate with your team
+    {
+        "login": "admin",
+        "app_token": "TOKEN_JWT"
+    }
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+O Token deve ser um JWT HS256, não pode estar expirado e deve conter o seguinte objeto:
 
-## Test and Deploy
+    {
+        "id": "1", // id do usuario
+        "login": "admin", // login do usuario
+        "email": "admin@admin.com", // email do usuario
+        "exp": 1664159645 // expiracao do token
+    }
 
-Use the built-in continuous integration in GitLab.
+O token gerado na resposta dos endpoints de autenticação deve ser utilizado ao chamar os endpoints privados via Authorization header:
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+    Authorization: <TOKEN_JWT>
 
-***
+Os demais endpoints seguem o que foi definido no detalhamento do projeto, sendo os seguintes:
 
-# Editing this README
+	POST /api/v1/users --> Criação de usuários (private)
+	GET /api/v1/users/{id} --> Obter usuário (private)
+	PUT /api/v1/users/{id} --> Atualizar usuário (private)
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!).  Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+	POST /api/v1/lists --> Criação de lista (public)
+	GET /api/v1/lists/{list_id} --> Obter lista (public)
+	DELETE /api/v1/lists/{list_id} --> Deletar lista (private)
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+	POST /api/v1/lists/{list_id}/items --> Salvar item na lista (private)
+	GET /api/v1/lists/{list_id}/items --> Obter itens da lista (private)
+	PUT /api/v1/lists/{list_id}/items/{item_id} --> Atualizar item da lista (private)
+	DELETE /api/v1/lists/{list_id}/items/{item_id} --> Deletar item da lista (private)
 
-## Name
-Choose a self-explaining name for your project.
+Para parar os contêineres, execute
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+    $ [sudo] docker-compose down
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+Ou, caso possua o make instalado:
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+    $ go generate ./...
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+A execução dos testes unitários só pode ser realizada caso possua o GO instalado na máquina. Para isso, são é necessária a criação dos mocks primeiro, a partir do comando:
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+    $ make clean
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Ou, caso possua o make instalado:
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+    $ make generate-mocks
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+## Demonstração
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Link do video de demonstração: https://youtu.be/kSiFGiWWg4A
